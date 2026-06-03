@@ -71,6 +71,7 @@ export default function TradePlannerPage() {
         setInput(prev => ({
           ...prev,
           entryPrice: fetchedPrice,
+          changePercent: quoteData.changePercent || 0,
           stopLossPrice: fetchedPrice ? Number((fetchedPrice * 0.95).toFixed(2)) : 0,
           takeProfitPrice: fetchedPrice ? Number((fetchedPrice * 1.05).toFixed(2)) : 0,
         }));
@@ -120,8 +121,12 @@ export default function TradePlannerPage() {
           const data = await res.json();
           if (data.price) {
             setInput(prev => {
-              if (prev.entryPrice !== data.price) {
-                return { ...prev, entryPrice: data.price };
+              if (prev.entryPrice !== data.price || prev.changePercent !== data.changePercent) {
+                return { 
+                  ...prev, 
+                  entryPrice: data.price,
+                  changePercent: data.changePercent !== undefined ? data.changePercent : prev.changePercent
+                };
               }
               return prev;
             });
@@ -217,8 +222,13 @@ export default function TradePlannerPage() {
                   <h1 className="text-3xl sm:text-5xl font-extrabold text-charcoal tracking-tighter">
                     {formatCurrency(input.entryPrice)}
                   </h1>
+                  {input.changePercent !== undefined && (
+                    <p className={`text-sm font-semibold ${input.changePercent >= 0 ? 'text-emerald-600' : 'text-rose-500'}`}>
+                      {input.changePercent >= 0 ? '+' : ''}{input.changePercent}% วันนี้
+                    </p>
+                  )}
                   {isFetchingPrice && (
-                    <div className="w-4 h-4 border-2 border-lavender border-t-transparent rounded-full animate-spin inline-block" />
+                    <div className="w-4 h-4 border-2 border-lavender border-t-transparent rounded-full animate-spin inline-block mt-2" />
                   )}
                 </div>
 

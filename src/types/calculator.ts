@@ -23,6 +23,7 @@ export interface CalculatorInput {
   takeProfitPrice: number;
   totalCapital: number;
   riskPercent: number;
+  changePercent?: number;
 }
 
 /** ผลลัพธ์ที่คำนวณออกมา */
