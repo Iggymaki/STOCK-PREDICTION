@@ -128,49 +128,36 @@ export async function GET(request: Request) {
     if (targetLow <= 0) targetLow = price * 0.85;
 
     // ===== 3. เรียก AlphaCore AI =====
-    const userPrompt = `วิเคราะห์จุดเข้าซื้อ ${symbol} ราคาปัจจุบัน $${price.toFixed(2)}
-
-สถานการณ์:
-- 52-Week High: $${high52w.toFixed(2)} | 52-Week Low: $${low52w.toFixed(2)}
+    const userPrompt = `[INPUT DATA Matrix]
+Current_Price: $${price.toFixed(2)}
+Technical_Indicators:
+- 52W High: $${high52w.toFixed(2)} | 52W Low: $${low52w.toFixed(2)}
 - ตำแหน่งใน 52W Range: ${((price - low52w) / (high52w - low52w) * 100).toFixed(0)}%
-- Forward P/E: ${pe > 0 ? pe.toFixed(1) : 'N/A'}
-- Beta: ${beta.toFixed(2)}
-- Dividend Yield: ${divYield}%
-- Sector: ${sector}
-- เป้าหมายนักวิเคราะห์เฉลี่ย: $${targetMean.toFixed(2)} (สูงสุด: $${targetHigh.toFixed(2)}, ต่ำสุด: $${targetLow.toFixed(2)})
-- คำแนะนำ consensus: ${recommendation}
+News_Catalysts:
+${newsTitles.length > 0 ? newsTitles.map((t, i) => `- ${t}`).join('\n') : '- ไม่มีข่าวล่าสุด'}
+External_Analyst_Views:
+- เป้าหมายเฉลี่ย: $${targetMean.toFixed(2)} (สูงสุด: $${targetHigh.toFixed(2)}, ต่ำสุด: $${targetLow.toFixed(2)})
+- คำแนะนำ: ${recommendation}
+- P/E: ${pe > 0 ? pe.toFixed(1) : 'N/A'}, Beta: ${beta.toFixed(2)}
 
-ข่าวล่าสุด:
-${newsTitles.length > 0 ? newsTitles.map((t, i) => `${i + 1}. ${t}`).join('\n') : 'ไม่มีข่าวล่าสุด'}
-
-[ตรรกะการประมวลผล (Processing Logic) ที่ต้องทำตามอย่างเคร่งครัด]
-ขั้นตอนที่ 1: การสังเคราะห์สัญญาณ (Signal Synthesis): ผสมผสานสัญญาณเทคนิคกับปัจจัยพื้นฐานเพื่อสร้างแนวโน้มโดยรวม พิจารณาน้ำหนักข่าวที่มีผลระดับ Macro ก่อน
-ขั้นตอนที่ 2: การคำนวณจุดซื้อขาย (Trading Setup Calculation):
-- จุดเข้าซื้อ (Entry Price): คำนวณจากระดับแนวรับล่าสุดที่แข็งแกร่งที่สุด
-- STOP LOSS: คำนวณจากระดับแนวรับถัดไปเพื่อลดความเสี่ยง
-- TAKE PROFIT: คำนวณจากระดับแนวต้านถัดไป
-ขั้นตอนที่ 3: การประเมินความคุ้มค่า (Risk : Reward Calculation): (Take Profit - ราคาเข้าซื้อ) / (ราคาเข้าซื้อ - Stop Loss)
-- ถ้าน้อยกว่า 1:1.5 = ไม่คุ้ม (wait), 1:1.5 ถึง 1:2.0 = พอใช้ได้, มากกว่า 1:2.0 = คุ้มค่ามาก
-ขั้นตอนที่ 4: การประเมินความมั่นใจ AI: ให้คะแนนปัจจัยบวก (เทคนิค+ข่าวบวก) หักลบปัจจัยลบ (การเทขาย+ข่าวลบ)
-ขั้นตอนที่ 5: การประเมินข่าว: แยกแยะและสรุปผลกระทบระยะสั้นและระยะยาว
-
-ให้ทำ Multi-Agent Debate แล้วตอบเป็น JSON format โครงสร้างนี้เท่านั้น:
+[THINKING PROCESS & LOGIC ENGINE]
+ให้ทำตามสเต็ป 1-3 ใน SYSTEM PROMPT อย่างเคร่งครัด และตอบกลับเป็น JSON โครงสร้างนี้เท่านั้น:
 {
-  "entryPrice": (ราคาจุดเข้าซื้อที่แนะนำ, ตัวเลข),
-  "stopLoss": (จุดตัดขาดทุน, ตัวเลข),
-  "takeProfit": (จุดทำกำไร, ตัวเลข),
+  "entryPrice": (จุดเข้าซื้อ ตัวเลข),
+  "stopLoss": (STOP LOSS ตัวเลข),
+  "takeProfit": (TAKE PROFIT ตัวเลข),
   "confidence": "high" | "medium" | "low",
-  "confidenceTh": (อธิบายระดับความมั่นใจ 1 ประโยค ภาษาไทยตามตรรกะข้อ 4),
+  "confidenceTh": (ระบุคะแนนเต็ม 10 และอธิบายเหตุผล 1 ประโยค),
   "signal": "strong_buy" | "buy" | "wait" | "sell",
-  "signalTh": (สรุปสัญญาณ 1 ประโยค ภาษาไทย),
-  "reasoning": (สรุปผลการ debate และผลกระทบข่าวตามตรรกะข้อ 1 และ 5 อย่างตรงไปตรงมา 3-5 ประโยค ภาษาไทย),
+  "signalTh": (สรุปคำแนะนำสั้นๆ ถ้า R:R ไม่คุ้มให้บังคับเป็น "ชะลอการลงทุน"),
+  "reasoning": (สรุปภาพรวมและมุมมองแบบเนื้อเน้นๆ 3-5 ประโยค รวมถึงระบุ Conflict ถัดมาถ้ามี),
   "technicalLevels": {
-    "support": [แนวรับ 2-3 จุด ตัวเลข เรียงจากต่ำไปสูง],
-    "resistance": [แนวต้าน 2-3 จุด ตัวเลข เรียงจากต่ำไปสูง]
+    "support": [แนวรับ 2-3 จุด ตัวเลข],
+    "resistance": [แนวต้าน 2-3 จุด ตัวเลข]
   },
   "riskReward": (Risk:Reward ratio ตัวเลข),
-  "timeframe": (กรอบเวลา เช่น "Swing Trade (1-4 สัปดาห์)"),
-  "keyFactors": [(ปัจจัยหลัก 3-4 ข้อสั้นๆ ภาษาไทย)]
+  "timeframe": "Swing Trade (1-4 สัปดาห์)",
+  "keyFactors": [(แท็ก 4 คีย์เวิร์ดที่สำคัญที่สุด)]
 }`;
 
     const aiResult = await callGroqAI<AIEntryAnalysis>(
