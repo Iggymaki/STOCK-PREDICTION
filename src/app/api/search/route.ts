@@ -1,5 +1,10 @@
 import { NextResponse } from 'next/server';
 
+const YAHOO_HEADERS = {
+  'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+  'Accept': 'application/json',
+};
+
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const q = searchParams.get('q');
@@ -9,8 +14,10 @@ export async function GET(request: Request) {
   }
 
   try {
-    // ใช้ Yahoo Finance API แบบฟรี สำหรับ Autocomplete
-    const response = await fetch(`https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=8&newsCount=0`);
+    // ใช้ Yahoo Finance API แบบฟรี สำหรับ Autocomplete พร้อม Header กันบล็อคบน Cloudflare
+    const response = await fetch(`https://query2.finance.yahoo.com/v1/finance/search?q=${encodeURIComponent(q)}&quotesCount=8&newsCount=0`, {
+      headers: YAHOO_HEADERS
+    });
     
     if (!response.ok) {
       throw new Error('Failed to fetch from Yahoo Finance');
