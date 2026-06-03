@@ -190,24 +190,8 @@ export function AIEntryCard({
           </motion.div>
         </div>
 
-        {/* ═══ Risk:Reward + Confidence ═══ */}
-        <div className="grid grid-cols-2 gap-3">
-          {/* R:R */}
-          <div className="bg-ghost/80 rounded-xl p-3 flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-lavender/20 flex items-center justify-center shrink-0">
-              <BarChart3 className="w-4 h-4 text-lavender" />
-            </div>
-            <div>
-              <p className="text-[10px] text-slate-text font-medium">Risk : Reward</p>
-              <p className={`text-lg font-bold ${analysis.riskReward >= 2 ? 'text-emerald-600' : analysis.riskReward >= 1 ? 'text-amber-600' : 'text-rose-500'}`} style={{ fontFamily: 'var(--font-mono)' }}>
-                1 : {analysis.riskReward.toFixed(1)}
-              </p>
-              <p className="text-[9px] text-slate-text">
-                {analysis.riskReward >= 2 ? '✨ คุ้มค่ามาก' : analysis.riskReward >= 1 ? '👍 พอใช้ได้' : '⚠️ ต่ำไป'}
-              </p>
-            </div>
-          </div>
-
+        {/* ═══ Confidence ═══ */}
+        <div className="grid grid-cols-1 gap-3">
           {/* Confidence */}
           <div className="bg-ghost/80 rounded-xl p-3">
             <p className="text-[10px] text-slate-text font-medium mb-1.5">ความมั่นใจ AI</p>

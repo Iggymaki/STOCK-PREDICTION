@@ -187,13 +187,12 @@ External_Analyst_Views:
   "confidence": "high" | "medium" | "low",
   "confidenceTh": (ระบุคะแนนเต็ม 10 และอธิบายเหตุผล 1 ประโยค),
   "signal": "strong_buy" | "buy" | "wait" | "sell",
-  "signalTh": (สรุปคำแนะนำสั้นๆ ถ้า R:R ไม่คุ้มให้บังคับเป็น "ชะลอการลงทุน"),
+  "signalTh": (สรุปคำแนะนำสั้นๆ),
   "reasoning": (สรุปภาพรวมและมุมมองแบบเนื้อเน้นๆ 3-5 ประโยค รวมถึงระบุ Conflict ถัดมาถ้ามี),
   "technicalLevels": {
     "support": [แนวรับ 2-3 จุด ตัวเลข],
     "resistance": [แนวต้าน 2-3 จุด ตัวเลข]
   },
-  "riskReward": (Risk:Reward ratio ตัวเลข),
   "timeframe": "Swing Trade (1-4 สัปดาห์)",
   "keyFactors": [(แท็ก 4 คีย์เวิร์ดที่สำคัญที่สุด)]
 }`;
@@ -225,10 +224,6 @@ External_Analyst_Views:
             ? aiResult.technicalLevels.resistance.map(Number).filter(n => n > 0)
             : [Number((price * 1.05).toFixed(2)), Number((price * 1.10).toFixed(2))],
         },
-        // คำนวณ Risk/Reward ใหม่ด้วยสมการคณิตศาสตร์เพื่อให้ได้ตัวเลขที่ถูกต้อง 100% เสมอ
-        riskReward: (aiResult.takeProfit && aiResult.entryPrice && aiResult.stopLoss && aiResult.entryPrice > aiResult.stopLoss) 
-          ? Number(((aiResult.takeProfit - aiResult.entryPrice) / (aiResult.entryPrice - aiResult.stopLoss)).toFixed(1))
-          : (Number(aiResult.riskReward) || 0),
         timeframe: aiResult.timeframe || 'Swing Trade (1-4 สัปดาห์)',
         keyFactors: Array.isArray(aiResult.keyFactors) ? aiResult.keyFactors : [],
       };
@@ -271,7 +266,6 @@ External_Analyst_Views:
         support: [Number(low52w.toFixed(2)), Number((price * 0.95).toFixed(2))],
         resistance: [Number((price * 1.05).toFixed(2)), Number(high52w.toFixed(2))],
       },
-      riskReward: Number(rrFb.toFixed(1)),
       timeframe: 'Swing Trade (1-4 สัปดาห์)',
       keyFactors: [
         `ราคาอยู่ที่ ${(positionInRange * 100).toFixed(0)}% ของ 52W Range`,

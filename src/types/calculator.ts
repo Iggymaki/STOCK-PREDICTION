@@ -151,7 +151,7 @@ export interface AIEntryAnalysis {
   signalTh: string;            // สัญญาณ ภาษาไทย
   reasoning: string;           // เหตุผลจาก AI เป็นภาษาไทย
   technicalLevels: TechnicalLevels;
-  riskReward: number;          // Risk:Reward ratio
+  riskReward?: number;         // Risk:Reward ratio (optional)
   timeframe: string;           // เช่น "Swing Trade (1-4 สัปดาห์)"
   keyFactors: string[];        // ปัจจัยหลักที่ AI ใช้วิเคราะห์ (ภาษาไทย)
 }
