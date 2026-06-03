@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { callGroqAI, ALPHACORE_SYSTEM_PROMPT } from '@/lib/ai-client';
 import type { AIEntryAnalysis } from '@/types/calculator';
+import { calculateRSI, calculateEMA } from '@/lib/technical-analysis';
 
 /**
  * GET /api/entry-analysis?symbol=AAPL&price=195.27
@@ -30,7 +31,9 @@ export async function GET(request: Request) {
     let targetHigh = 0, targetLow = 0, targetMean = 0;
     let pe = 0, beta = 1, divYield = '0';
     let sector = 'Unknown', recommendation = 'none';
+    let revG = 0, earnG = 0, instHold = 0;
     let newsTitles: string[] = [];
+    let newsPublishers: string[] = [];
 
     // ดึง financial data
     try {
@@ -61,6 +64,11 @@ export async function GET(request: Request) {
         divYield = ((fd.dividendYield?.raw || 0) * 100).toFixed(2);
         sector = ap.sector || 'Unknown';
         recommendation = fd.recommendationKey || 'none';
+        
+        // Deep Fundamentals
+        revG = fd.revenueGrowth?.raw || 0;
+        earnG = fd.earningsGrowth?.raw || 0;
+        instHold = ks.heldPercentInstitutions?.raw || 0;
       }
     } catch (e) {
       console.warn('[Entry Analysis] Summary fetch failed:', (e as Error).message);
@@ -74,13 +82,15 @@ export async function GET(request: Request) {
       );
       if (newsRes.ok) {
         const newsJson = await newsRes.json();
-        newsTitles = (newsJson.news || []).slice(0, 5).map((n: any) => n.title);
+        const newsItems = (newsJson.news || []).slice(0, 5);
+        newsTitles = newsItems.map((n: any) => n.title);
+        newsPublishers = newsItems.map((n: any) => n.publisher || 'Unknown');
       }
     } catch (e) {
       console.warn('[Entry Analysis] News fetch failed');
     }
 
-    // ถ้าราคายังเป็น 0 ลอง v8 chart
+    // ถ้าราคายังเป็น 0 ลอง v8 chart (1d)
     if (price <= 0) {
       try {
         const chartRes = await fetch(
@@ -99,6 +109,29 @@ export async function GET(request: Request) {
       } catch (e) {
         console.warn('[Entry Analysis] Chart fetch failed');
       }
+    }
+
+    // ===== 1.5 ดึงข้อมูล Historical Chart (3mo) เพื่อคำนวณ Technical Indicators =====
+    let rsi14 = 50, ema20 = 0, ema50 = 0, macdLine = 0;
+    let history14d: number[] = [];
+    try {
+      const histRes = await fetch(
+        `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=3mo&interval=1d`,
+        { headers: YAHOO_HEADERS }
+      );
+      if (histRes.ok) {
+        const histData = await histRes.json();
+        const closes = histData.chart?.result?.[0]?.indicators?.quote?.[0]?.close?.filter((c: number | null) => c !== null) || [];
+        if (closes.length >= 14) {
+          rsi14 = calculateRSI(closes, 14);
+          ema20 = calculateEMA(closes, 20);
+          ema50 = calculateEMA(closes, 50);
+          macdLine = calculateEMA(closes, 12) - calculateEMA(closes, 26);
+          history14d = closes.slice(-14).map((p: number) => Number(p.toFixed(2)));
+        }
+      }
+    } catch (e) {
+      console.warn('[Entry Analysis] Historical chart fetch failed:', (e as Error).message);
     }
 
     // ===== Guard: ถ้าราคายังเป็น 0 ส่ง error กลับ =====
@@ -131,14 +164,19 @@ export async function GET(request: Request) {
     const userPrompt = `[INPUT DATA Matrix]
 Current_Price: $${price.toFixed(2)}
 Technical_Indicators:
+- RSI (14D): ${rsi14.toFixed(2)} | MACD Line: ${macdLine.toFixed(2)}
+- EMA 20: $${ema20.toFixed(2)} | EMA 50: $${ema50.toFixed(2)}
 - 52W High: $${high52w.toFixed(2)} | 52W Low: $${low52w.toFixed(2)}
-- ตำแหน่งใน 52W Range: ${((price - low52w) / (high52w - low52w) * 100).toFixed(0)}%
+- ราคาปิด 14 วันล่าสุด: [${history14d.join(', ')}]
+Deep_Fundamentals:
+- Revenue Growth: ${(revG * 100).toFixed(2)}% | Earnings Growth: ${(earnG * 100).toFixed(2)}%
+- Institutional Ownership: ${(instHold * 100).toFixed(2)}%
+- P/E: ${pe > 0 ? pe.toFixed(1) : 'N/A'} | Beta: ${beta.toFixed(2)}
 News_Catalysts:
-${newsTitles.length > 0 ? newsTitles.map((t, i) => `- ${t}`).join('\n') : '- ไม่มีข่าวล่าสุด'}
+${newsTitles.length > 0 ? newsTitles.map((t, i) => `- [${newsPublishers[i]}] ${t}`).join('\n') : '- ไม่มีข่าวล่าสุด'}
 External_Analyst_Views:
 - เป้าหมายเฉลี่ย: $${targetMean.toFixed(2)} (สูงสุด: $${targetHigh.toFixed(2)}, ต่ำสุด: $${targetLow.toFixed(2)})
 - คำแนะนำ: ${recommendation}
-- P/E: ${pe > 0 ? pe.toFixed(1) : 'N/A'}, Beta: ${beta.toFixed(2)}
 
 [THINKING PROCESS & LOGIC ENGINE]
 ให้ทำตามสเต็ป 1-3 ใน SYSTEM PROMPT อย่างเคร่งครัด และตอบกลับเป็น JSON โครงสร้างนี้เท่านั้น:

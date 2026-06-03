@@ -56,7 +56,7 @@ export async function GET(request: Request) {
 
   // ===== Strategy 2: Yahoo quoteSummary =====
   try {
-    const summaryUrl = `https://query2.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(symbol)}?modules=price,financialData`;
+    const summaryUrl = `https://query2.finance.yahoo.com/v10/finance/quoteSummary/${encodeURIComponent(symbol)}?modules=price,financialData,defaultKeyStatistics`;
     const summaryRes = await fetch(summaryUrl, { headers: HEADERS });
 
     if (summaryRes.ok) {
@@ -64,6 +64,7 @@ export async function GET(request: Request) {
       const result = summaryData?.quoteSummary?.result?.[0] || {};
       const priceModule = result.price || {};
       const fdModule = result.financialData || {};
+      const dksModule = result.defaultKeyStatistics || {};
 
       const price = priceModule.regularMarketPrice?.raw || fdModule.currentPrice?.raw || 0;
       const prevClose = priceModule.regularMarketPreviousClose?.raw || 0;
@@ -77,6 +78,9 @@ export async function GET(request: Request) {
           name: priceModule.shortName || priceModule.longName || symbol.toUpperCase(),
           high52w: priceModule.fiftyTwoWeekHigh?.raw || 0,
           low52w: priceModule.fiftyTwoWeekLow?.raw || 0,
+          revenueGrowth: fdModule.revenueGrowth?.raw || 0,
+          earningsGrowth: fdModule.earningsGrowth?.raw || 0,
+          heldPercentInstitutions: dksModule.heldPercentInstitutions?.raw || 0,
           source: 'yahoo-summary',
         });
       }
