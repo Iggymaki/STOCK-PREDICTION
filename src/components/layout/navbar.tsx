@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { NAV_ITEMS } from '@/lib/constants';
 
 import { useCurrency } from '@/context/currency-context';
+import { AIQuota } from './ai-quota';
 
 export function Navbar() {
   const pathname = usePathname();
@@ -73,6 +74,8 @@ export function Navbar() {
           </div>
 
           <div className="w-px h-6 bg-slate-200" />
+          
+          <AIQuota />
 
           {/* Currency Toggle */}
           <button
