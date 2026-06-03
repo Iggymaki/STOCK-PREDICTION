@@ -83,9 +83,9 @@ export function AIEntryCard({
     if (!b || b <= 0 || !a) return '0.0';
     return ((a - b) / b * 100).toFixed(1);
   };
-  const entryDiff = safePercent(analysis.entryPrice - currentPrice, currentPrice);
-  const slDiff = safePercent(currentPrice - analysis.stopLoss, currentPrice);
-  const tpDiff = safePercent(analysis.takeProfit - currentPrice, currentPrice);
+  const entryDiff = safePercent(analysis.entryPrice, currentPrice);
+  const slDiff = safePercent(analysis.stopLoss, currentPrice);
+  const tpDiff = safePercent(analysis.takeProfit, currentPrice);
 
   // ถ้าราคาไม่พร้อม แสดงข้อความเตือน
   const priceUnavailable = currentPrice <= 0 || analysis.entryPrice <= 0;

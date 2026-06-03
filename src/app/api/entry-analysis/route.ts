@@ -190,7 +190,10 @@ ${newsTitles.length > 0 ? newsTitles.map((t, i) => `${i + 1}. ${t}`).join('\n') 
             ? aiResult.technicalLevels.resistance.map(Number).filter(n => n > 0)
             : [Number((price * 1.05).toFixed(2)), Number((price * 1.10).toFixed(2))],
         },
-        riskReward: Number(aiResult.riskReward) || 0,
+        // คำนวณ Risk/Reward ใหม่ด้วยสมการคณิตศาสตร์เพื่อให้ได้ตัวเลขที่ถูกต้อง 100% เสมอ
+        riskReward: (aiResult.takeProfit && aiResult.entryPrice && aiResult.stopLoss && aiResult.entryPrice > aiResult.stopLoss) 
+          ? Number(((aiResult.takeProfit - aiResult.entryPrice) / (aiResult.entryPrice - aiResult.stopLoss)).toFixed(1))
+          : (Number(aiResult.riskReward) || 0),
         timeframe: aiResult.timeframe || 'Swing Trade (1-4 สัปดาห์)',
         keyFactors: Array.isArray(aiResult.keyFactors) ? aiResult.keyFactors : [],
       };
