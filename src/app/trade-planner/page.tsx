@@ -14,37 +14,38 @@ import { FamousInvestors } from '@/components/trade-planner/famous-investors';
 import { StockDetailCard } from '@/components/trade-planner/stock-detail-card';
 import { AboutCompany } from '@/components/trade-planner/about-company';
 import { FinancialDashboard } from '@/components/trade-planner/financial-dashboard';
-import { AIEntryCard } from '@/components/trade-planner/ai-entry-card';
+import { TopDownAnalysisCard } from '@/components/trade-planner/top-down-analysis';
 import { useRiskCalculator } from '@/hooks/use-risk-calculator';
 import { useCurrency } from '@/context/currency-context';
 import { DEFAULT_CALCULATOR_INPUT, RATING_CONFIG } from '@/lib/constants';
-import type { CalculatorInput, AssetInsight, AIEntryAnalysis } from '@/types/calculator';
+import type { CalculatorInput, AssetInsight, TopDownAnalysis } from '@/types/calculator';
 import {
   Sparkles, Newspaper, Calculator, MapPin, Wallet,
   SlidersHorizontal, TrendingUp, TrendingDown,
-  Users, AlertTriangle, FileSpreadsheet, Search
+  Users, AlertTriangle, FileSpreadsheet, Search,
+  Globe,
 } from 'lucide-react';
 
-type TabId = 'ai-entry' | 'overview' | 'calculator' | 'financials';
+type TabId = 'top-down' | 'overview' | 'calculator' | 'financials';
 
 const TABS = [
-  { id: 'ai-entry' as TabId, label: 'AI แนะนำจุดเข้า', Icon: Sparkles, desc: 'จุดซื้อ / SL / TP' },
+  { id: 'top-down' as TabId, label: 'Top-Down Analysis', Icon: Globe, desc: 'เศรษฐกิจ → อุตสาหกรรม → หุ้น → กราฟ' },
   { id: 'overview' as TabId, label: 'ภาพรวม & ข่าว', Icon: Newspaper, desc: 'ข้อมูลเชิงลึก' },
   { id: 'calculator' as TabId, label: 'คำนวณไม้', Icon: Calculator, desc: 'Position Sizing' },
 ];
 
 export default function TradePlannerPage() {
   const [input, setInput] = useState<CalculatorInput>(DEFAULT_CALCULATOR_INPUT);
-  const [activeTab, setActiveTab] = useState<TabId>('ai-entry');
+  const [activeTab, setActiveTab] = useState<TabId>('top-down');
 
   // สถานะโหลดข้อมูล Real-time
   const [isFetchingPrice, setIsFetchingPrice] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [isAnalyzingEntry, setIsAnalyzingEntry] = useState(false);
+  const [isAnalyzingTopDown, setIsAnalyzingTopDown] = useState(false);
 
   // ข้อมูลเชิงลึกแบบ Dynamic
   const [insight, setInsight] = useState<AssetInsight | null>(null);
-  const [entryAnalysis, setEntryAnalysis] = useState<AIEntryAnalysis | null>(null);
+  const [topDownAnalysis, setTopDownAnalysis] = useState<TopDownAnalysis | null>(null);
 
   const { formatCurrency } = useCurrency();
 
@@ -57,9 +58,9 @@ export default function TradePlannerPage() {
     setInput(prev => ({ ...prev, assetSymbol: symbol, assetName: name }));
     setIsFetchingPrice(true);
     setIsAnalyzing(true);
-    setIsAnalyzingEntry(true);
+    setIsAnalyzingTopDown(true);
     setInsight(null);
-    setEntryAnalysis(null);
+    setTopDownAnalysis(null);
 
     try {
       // ดึงราคาปัจจุบัน
@@ -78,30 +79,29 @@ export default function TradePlannerPage() {
       }
       setIsFetchingPrice(false);
 
-      // ดึงผลวิเคราะห์จาก AI (parallel)
-      const [analyzeRes, entryRes] = await Promise.all([
+      // ดึงผลวิเคราะห์จาก AI (parallel): analyze + top-down
+      const [analyzeRes, topDownRes] = await Promise.all([
         fetch(`/api/analyze?symbol=${encodeURIComponent(symbol)}`),
-        fetch(`/api/entry-analysis?symbol=${encodeURIComponent(symbol)}&price=${fetchedPrice}`),
+        fetch(`/api/top-down?symbol=${encodeURIComponent(symbol)}&price=${fetchedPrice}`),
       ]);
 
       if (analyzeRes.ok) {
         const analyzeData = await analyzeRes.json();
-        // ใช้ข้อมูลจริงจาก API ตรงๆ ไม่ override
         setInsight(analyzeData);
       }
       setIsAnalyzing(false);
 
-      if (entryRes.ok) {
-        const entryData = await entryRes.json();
-        setEntryAnalysis(entryData);
+      if (topDownRes.ok) {
+        const topDownData = await topDownRes.json();
+        setTopDownAnalysis(topDownData);
       }
-      setIsAnalyzingEntry(false);
+      setIsAnalyzingTopDown(false);
     } catch (error) {
       console.error('Error fetching asset data:', error);
     } finally {
       setIsFetchingPrice(false);
       setIsAnalyzing(false);
-      setIsAnalyzingEntry(false);
+      setIsAnalyzingTopDown(false);
     }
   }, [input.entryPrice]);
 
@@ -285,7 +285,7 @@ export default function TradePlannerPage() {
                 `}
                 style={{ fontFamily: 'var(--font-heading)' }}
               >
-                <tab.Icon className={`w-4 h-4 ${activeTab === tab.id && tab.id === 'ai-entry' ? 'text-lavender' : ''}`} />
+                <tab.Icon className={`w-4 h-4 ${activeTab === tab.id && tab.id === 'top-down' ? 'text-emerald-500' : ''}`} />
                 <div className="text-left">
                   <p className="leading-tight">{tab.label}</p>
                   <p className="text-[10px] font-normal opacity-60">{tab.desc}</p>
@@ -296,22 +296,22 @@ export default function TradePlannerPage() {
 
           {/* ════════════ Tab Content ════════════ */}
           <AnimatePresence mode="wait">
-            {/* ═══ Tab: AI แนะนำจุดเข้า ═══ */}
-            {activeTab === 'ai-entry' && (
+            {/* ═══ Tab: Top-Down Analysis ═══ */}
+            {activeTab === 'top-down' && (
               <motion.div
-                key="ai-entry"
+                key="top-down"
                 initial={{ opacity: 0, y: 12 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -12 }}
                 transition={{ duration: 0.2 }}
                 className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6"
               >
-                {/* Left: AI Entry Card */}
-                <AIEntryCard
-                  analysis={entryAnalysis}
+                {/* Left: Top-Down Analysis */}
+                <TopDownAnalysisCard
+                  analysis={topDownAnalysis}
                   currentPrice={input.entryPrice}
                   symbol={input.assetSymbol}
-                  isLoading={isAnalyzingEntry}
+                  isLoading={isAnalyzingTopDown}
                   onApplyToCalculator={handleApplyToCalculator}
                 />
 
@@ -327,7 +327,7 @@ export default function TradePlannerPage() {
                         consensusRating={insight.consensusRating}
                         averageTarget={insight.averageTarget}
                         upsidePercent={insight.upsidePercent}
-                        aiTarget={entryAnalysis?.takeProfit}
+                        aiTarget={topDownAnalysis?.technicalEntry.takeProfit1}
                       />
                     </div>
                   )}
@@ -398,7 +398,7 @@ export default function TradePlannerPage() {
                           consensusRating={insight.consensusRating}
                           averageTarget={insight.averageTarget}
                           upsidePercent={insight.upsidePercent}
-                          aiTarget={entryAnalysis?.takeProfit}
+                          aiTarget={topDownAnalysis?.technicalEntry.takeProfit1}
                         />
                       </div>
                     </div>
@@ -505,14 +505,14 @@ export default function TradePlannerPage() {
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-text">ดึงราคา Real-time ล่าสุดมาให้อัตโนมัติ — ปรับเองได้</p>
-                    {entryAnalysis && (
+                    {topDownAnalysis && (
                       <button
                         type="button"
-                        onClick={() => handleApplyToCalculator(entryAnalysis.entryPrice, entryAnalysis.stopLoss, entryAnalysis.takeProfit)}
+                        onClick={() => handleApplyToCalculator(topDownAnalysis.technicalEntry.entryPrice, topDownAnalysis.technicalEntry.stopLoss, topDownAnalysis.technicalEntry.takeProfit1)}
                         className="text-[11px] text-lavender font-semibold hover:underline cursor-pointer flex items-center gap-1"
                       >
                         <Sparkles className="w-3 h-3" />
-                        ใช้จุดที่ AI แนะนำ (${entryAnalysis.entryPrice} / SL: ${entryAnalysis.stopLoss} / TP: ${entryAnalysis.takeProfit})
+                        ใช้จุดที่ AI แนะนำ (${topDownAnalysis.technicalEntry.entryPrice} / SL: ${topDownAnalysis.technicalEntry.stopLoss} / TP: ${topDownAnalysis.technicalEntry.takeProfit1})
                       </button>
                     )}
                   </motion.section>

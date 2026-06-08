@@ -156,3 +156,70 @@ export interface AIEntryAnalysis {
   timeframe: string;           // เช่น "Swing Trade (1-4 สัปดาห์)"
   keyFactors: string[];        // ปัจจัยหลักที่ AI ใช้วิเคราะห์ (ภาษาไทย)
 }
+
+// =============================================
+// Top-Down Analysis Types — วิเคราะห์แบบ Top-Down
+// =============================================
+
+/** ภาคเศรษฐกิจ (Macro) */
+export interface MacroEconomyAnalysis {
+  outlook: 'bullish' | 'bearish' | 'neutral';
+  outlookTh: string;
+  keyFactors: string[];
+  analysis: string;
+  fedPolicy: string;
+  inflationTrend: string;
+  gdpOutlook: string;
+  riskLevel: 'low' | 'medium' | 'high';
+}
+
+/** อุตสาหกรรม (Industry/Sector) */
+export interface IndustryAnalysis {
+  name: string;
+  nameTh: string;
+  outlook: 'bullish' | 'bearish' | 'neutral';
+  outlookTh: string;
+  analysis: string;
+  growthDrivers: string[];
+  risks: string[];
+  competitorComparison: string;
+  sectorRotation: string;
+}
+
+/** รายหุ้น (Individual Stock) */
+export interface StockFundamentalAnalysis {
+  fundamentalScore: number;
+  fundamentalSummary: string;
+  valuationAssessment: string;
+  earningsOutlook: string;
+  competitiveAdvantage: string;
+  catalysts: string[];
+  risks: string[];
+}
+
+/** จุดเข้าซื้อทางเทคนิค */
+export interface TechnicalEntryAnalysis {
+  entryPrice: number;
+  stopLoss: number;
+  takeProfit1: number;
+  takeProfit2: number;
+  riskReward: string;
+  timeHorizon: string;
+  chartPattern: string;
+  keyIndicators: string[];
+  entryReasoning: string;
+  invalidation: string;
+}
+
+/** ผลวิเคราะห์ Top-Down แบบครบวงจร */
+export interface TopDownAnalysis {
+  executiveSummary: string;
+  overallSignal: 'strong_buy' | 'buy' | 'wait' | 'sell';
+  overallConfidence: number;
+  macroEconomy: MacroEconomyAnalysis;
+  industry: IndustryAnalysis;
+  stockAnalysis: StockFundamentalAnalysis;
+  technicalEntry: TechnicalEntryAnalysis;
+  analyzedAt: string;
+  symbol: string;
+}
