@@ -317,20 +317,7 @@ export default function TradePlannerPage() {
 
                 {/* Right: Sidebar */}
                 <div className="space-y-5">
-                  {/* ราคาเป้าหมายนักวิเคราะห์ */}
-                  {insight && !isAnalyzing && (
-                    <div className="glass-card-static p-5">
-                      <AnalystTargets
-                        analysts={insight.analysts}
-                        currentPrice={input.entryPrice}
-                        consensusRatingTh={insight.consensusRatingTh}
-                        consensusRating={insight.consensusRating}
-                        averageTarget={insight.averageTarget}
-                        upsidePercent={insight.upsidePercent}
-                        aiTarget={topDownAnalysis?.technicalEntry.takeProfit1}
-                      />
-                    </div>
-                  )}
+
 
                   {/* ข่าวล่าสุด */}
                   {insight && !isAnalyzing && insight.news.length > 0 && (

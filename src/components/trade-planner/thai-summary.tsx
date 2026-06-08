@@ -59,7 +59,7 @@ export function ThaiSummary({ summary, isValid }: ThaiSummaryProps) {
             transition={{ delay: 0.3, duration: 0.4 }}
             className="mt-4 h-0.5 rounded-full origin-left"
             style={{
-              background: 'linear-gradient(to right, oklch(0.85 0.10 280 / 0.3), transparent)',
+              background: 'linear-gradient(to right, rgba(0, 86, 151, 0.3), transparent)',
             }}
           />
         )}
