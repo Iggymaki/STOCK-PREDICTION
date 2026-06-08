@@ -107,9 +107,7 @@ export const DEFAULT_CALCULATOR_INPUT = {
 /** Navigation items */
 export const NAV_ITEMS = [
   { href: '/', label: 'หน้าแรก', icon: '🏠' },
-  { href: '/trade-planner', label: 'วางแผนเทรด', icon: '📊' },
-  { href: '/portfolio-builder', label: 'จัดพอร์ตการลงทุน', icon: '💼' },
-  { href: '/market-mood', label: 'อารมณ์ตลาด', icon: '🧠', disabled: true },
+  { href: '/trade-planner', label: 'วิเคราะห์หุ้น', icon: '📊' },
 ];
 
 // =============================================

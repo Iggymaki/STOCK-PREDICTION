@@ -16,7 +16,6 @@ interface TopDownAnalysisCardProps {
   currentPrice: number;
   symbol: string;
   isLoading: boolean;
-  onApplyToCalculator: (entry: number, sl: number, tp: number) => void;
 }
 
 /* ═══ Outlook badge config ═══ */
@@ -44,7 +43,6 @@ export function TopDownAnalysisCard({
   currentPrice,
   symbol,
   isLoading,
-  onApplyToCalculator,
 }: TopDownAnalysisCardProps) {
   const [expandedSection, setExpandedSection] = useState<string | null>('macro');
   const { formatCurrency } = useCurrency();
@@ -506,21 +504,7 @@ export function TopDownAnalysisCard({
         </div>
       </SectionAccordion>
 
-      {/* ═══ CTA: Apply to Calculator ═══ */}
-      <motion.button
-        type="button"
-        onClick={() => onApplyToCalculator(
-          analysis.technicalEntry.entryPrice,
-          analysis.technicalEntry.stopLoss,
-          analysis.technicalEntry.takeProfit1
-        )}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-        className="w-full btn-primary py-3.5 flex items-center justify-center gap-2 rounded-xl text-sm font-semibold cursor-pointer"
-        style={{ fontFamily: 'var(--font-heading)' }}
-      >
-        🧮 ใช้จุดนี้ไปคำนวณไม้ <ArrowRight className="w-4 h-4" />
-      </motion.button>
+
 
       {/* Disclaimer */}
       <div className="flex items-start gap-1.5 px-1">

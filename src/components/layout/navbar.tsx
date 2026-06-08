@@ -27,7 +27,7 @@ export function Navbar() {
             className="text-lg font-semibold tracking-tight gradient-text"
             style={{ fontFamily: 'var(--font-heading)' }}
           >
-            Portfolio Planner
+            Atlas Trade
           </span>
         </Link>
 
@@ -36,31 +36,22 @@ export function Navbar() {
           <div className="flex items-center gap-1">
             {NAV_ITEMS.map((item) => {
               const isActive = pathname === item.href;
-              const isDisabled = item.disabled;
 
               return (
                 <Link
                   key={item.href}
-                  href={isDisabled ? '#' : item.href}
+                  href={item.href}
                   className={`
                     relative px-3.5 py-2 rounded-xl text-sm font-medium
                     transition-all duration-300
-                    ${isDisabled
-                      ? 'opacity-40 cursor-not-allowed'
-                      : isActive
-                        ? 'text-charcoal bg-lavender-light'
-                        : 'text-slate-text hover:text-charcoal hover:bg-white/50'
+                    ${isActive
+                      ? 'text-charcoal bg-lavender-light'
+                      : 'text-slate-text hover:text-charcoal hover:bg-white/50'
                     }
                   `}
-                  onClick={(e) => isDisabled && e.preventDefault()}
                 >
                   <span className="mr-1.5">{item.icon}</span>
                   {item.label}
-                  {isDisabled && (
-                    <span className="ml-1.5 text-[10px] opacity-60 bg-mist px-1.5 py-0.5 rounded-full">
-                      เร็วๆ นี้
-                    </span>
-                  )}
                   {isActive && (
                     <motion.div
                       layoutId="nav-indicator"
